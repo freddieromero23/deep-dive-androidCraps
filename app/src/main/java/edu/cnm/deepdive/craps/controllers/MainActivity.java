@@ -22,9 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
   private static final String FACE_PREFIX = "face_";
 
-  private TextView playsValue;
-  private TextView winsValue;
-  private TextView winspercentage;
+  private TextView tally;
   private Button play;
   private ToggleButton run;
   private Button reset;
@@ -38,9 +36,7 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    playsValue = findViewById(R.id.plays_value);
-    winsValue = findViewById(R.id.wins_value);
-    winspercentage = findViewById(R.id.percentage_value);
+    tally = findViewById(R.id.tally);
     play = findViewById(R.id.play);
     run = findViewById(R.id.play_On);
     reset = findViewById(R.id.reset);
@@ -48,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     game = new Game();
     faces = loadDiceFaces();
     setupEvents();
+    updateDisplay();
   }
 
   private void setupEvents() {
@@ -91,10 +88,8 @@ public class MainActivity extends AppCompatActivity {
       rolls = game.getCraps().getRolls();
     }
     long plays = wins + losses;
-    double percentage = (plays > 0) ? (100.0 * wins/ plays) : 0;
-    playsValue.setText(String.format("%,d", plays));
-    winsValue.setText(String.format("%,d", wins));
-    winspercentage.setText(String.format("%.2f%%", percentage));
+    double percentage = (plays > 0) ? (100.0 * wins / plays) : 0;
+    tally.setText(getString(R.string.tally_format, wins, plays, percentage));
     rollsList.setAdapter(
         new DiceImageAdapter(MainActivity.this, R.layout.item_roll_dice, rolls, state, faces));
   }
@@ -102,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
   private Drawable[] loadDiceFaces() {
     Drawable[] faces = new Drawable[6];
     Resources res = getResources();
-    for (int  i = 0; i < faces.length; i++) {
+    for (int i = 0; i < faces.length; i++) {
       int id = res.getIdentifier(FACE_PREFIX + (i + 1), "drawable", getPackageName());
       faces[i] = res.getDrawable(id, null);
     }
@@ -110,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private class PlayButtonListener implements OnClickListener {
+
     @Override
     public void onClick(View v) {
       game.play();
@@ -137,6 +133,12 @@ public class MainActivity extends AppCompatActivity {
           });
         }
       }
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          updateDisplay();
+        }
+      });
     }
 
   }
